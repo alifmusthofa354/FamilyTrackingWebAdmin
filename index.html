@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Tracking Dashboard</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header>
+        <h1>📍 Family Tracking Monitor</h1>
+        <div class="status-bar">
+            <span id="connection-status" class="status-indicator disconnected">Disconnected</span>
+            <span id="user-count">Active Users: 0</span>
+        </div>
+    </header>
+
+    <main>
+        <!-- Floating Hamburger Button (shown when sidebar is closed) -->
+        <button id="sidebar-open" class="floating-toggle" aria-label="Open Menu">
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </button>
+
+        <div id="map"></div>
+
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>Connected Family</h2>
+                <!-- Close Button Inside Header -->
+                <button id="sidebar-close" class="close-btn" aria-label="Close Menu">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                </button>
+            </div>
+            <ul id="user-list">
+                <!-- User items will be added here dynamically -->
+                <li class="empty-message">No users connected yet...</li>
+            </ul>
+        </div>
+    </main>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Socket.io loaded from Backend Server -->
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+
+    <!-- App Logic -->
+    <script src="app.js"></script>
+</body>
+
+</html>

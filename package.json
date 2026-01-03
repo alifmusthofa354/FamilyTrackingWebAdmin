@@ -1,0 +1,11 @@
+{
+    "name": "family-tracking-ui",
+    "version": "1.0.0",
+    "description": "Family Tracking Frontend UI",
+    "scripts": {
+        "start": "serve -s . -l 5000"
+    },
+    "dependencies": {
+        "serve": "^14.2.3"
+    }
+}
