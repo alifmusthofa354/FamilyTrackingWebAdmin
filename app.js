@@ -1,7 +1,136 @@
-// Replace with your Backend Server URL
-// Leave empty to connect to the same host that served the page
-const BACKEND_URL = '/';
-const socket = io();
+// --- Config & State ---
+let BACKEND_URL = localStorage.getItem('backend_url') || '';
+let socket;
+
+// Global State
+const markers = {};
+const localUserData = {};
+// DOM Elements (will be assigned on load or just use getElementById lazy)
+const userListElement = document.getElementById('user-list');
+const connectionStatus = document.getElementById('connection-status');
+const userCountElement = document.getElementById('user-count');
+
+
+// If URL is saved or we are on the same domain (likely local dev), try connecting
+// But if we are on Vercel and no URL is saved, we don't know where to connect.
+function initSocket(url) {
+    if (socket) {
+        socket.disconnect();
+    }
+
+    // If url is empty, it defaults to window.location.host
+    console.log('Connecting to:', url || 'Current Origin');
+    socket = io(url, {
+        reconnectionAttempts: 5,
+        timeout: 10000,
+        extraHeaders: {
+            "ngrok-skip-browser-warning": "true"
+        }
+    });
+
+    setupSocketListeners();
+}
+
+initSocket(BACKEND_URL);
+
+// --- Settings Modal Logic ---
+const settingsModal = document.getElementById('settings-modal');
+const settingsBtn = document.getElementById('settings-btn');
+const closeSettingsBtn = document.getElementById('close-settings-btn');
+const saveSettingsBtn = document.getElementById('save-settings-btn');
+const serverUrlInput = document.getElementById('server-url-input');
+
+settingsBtn.onclick = () => {
+    serverUrlInput.value = localStorage.getItem('backend_url') || '';
+    settingsModal.style.display = "block";
+}
+
+closeSettingsBtn.onclick = () => {
+    settingsModal.style.display = "none";
+}
+
+saveSettingsBtn.onclick = () => {
+    const url = serverUrlInput.value.trim();
+    if (url) {
+        localStorage.setItem('backend_url', url);
+        BACKEND_URL = url;
+        initSocket(url);
+        settingsModal.style.display = "none";
+        alert('Reconnecting to new server...');
+    } else {
+        localStorage.removeItem('backend_url');
+        BACKEND_URL = '';
+        initSocket(''); // Connect to self
+        settingsModal.style.display = "none";
+    }
+}
+
+// Close modal if clicking outside
+window.onclick = (event) => {
+    if (event.target == settingsModal) {
+        settingsModal.style.display = "none";
+    }
+}
+
+function setupSocketListeners() {
+    // Connection Events
+    socket.on('connect', () => {
+        const connectionStatus = document.getElementById('connection-status');
+        connectionStatus.textContent = 'Connected';
+        connectionStatus.classList.remove('disconnected');
+        connectionStatus.classList.add('connected');
+        console.log('Connected to server');
+    });
+
+    socket.on('disconnect', () => {
+        const connectionStatus = document.getElementById('connection-status');
+        connectionStatus.textContent = 'Disconnected';
+        connectionStatus.classList.remove('connected');
+        connectionStatus.classList.add('disconnected');
+    });
+
+    socket.on('connect_error', (err) => {
+        console.error('Connection Error:', err);
+        const connectionStatus = document.getElementById('connection-status');
+        connectionStatus.textContent = 'Error';
+    });
+
+    // 1. Initial Load
+    socket.on('current-users', (users) => {
+        // Clear existing data first
+        for (const userId in localUserData) delete localUserData[userId];
+        Object.assign(localUserData, users);
+
+        // Clear existing markers not in new list
+        Object.keys(markers).forEach(id => {
+            if (!users[id]) removeMarker(id);
+        });
+
+        // Update map markers
+        Object.values(users).forEach(user => updateMarker(user));
+
+        // Update sidebar
+        renderUserList();
+    });
+
+    // 2. Real-time updates
+    socket.on('receive-location', (data) => {
+        // console.log('Received location:', data);
+        localUserData[data.id] = data;
+        updateMarker(data);
+        renderUserList();
+    });
+
+    // 3. Handle User Disconnect
+    socket.on('user-disconnected', (userId) => {
+        console.log('User disconnected:', userId);
+        if (localUserData[userId]) {
+            delete localUserData[userId];
+            removeMarker(userId);
+            renderUserList();
+        }
+    });
+}
 
 // Initialize Map
 // Default view: Indonesia (approximate center)
@@ -37,26 +166,11 @@ resizeObserver.observe(mapElement);
 setTimeout(fixMapSize, 500);
 setTimeout(fixMapSize, 2000);
 
-// Store markers: { userId: L.marker }
-const markers = {};
-const userListElement = document.getElementById('user-list');
-const connectionStatus = document.getElementById('connection-status');
-const userCountElement = document.getElementById('user-count');
-const localUserData = {};
+// Variables moved to top
 
-// Connection Events
-socket.on('connect', () => {
-    connectionStatus.textContent = 'Connected';
-    connectionStatus.classList.remove('disconnected');
-    connectionStatus.classList.add('connected'); // This relies on CSS .status-indicator.connected
-    console.log('Connected to server');
-});
 
-socket.on('disconnect', () => {
-    connectionStatus.textContent = 'Disconnected';
-    connectionStatus.classList.remove('connected');
-    connectionStatus.classList.add('disconnected');
-});
+// Connection Events handled in setupSocketListeners
+
 
 // Update Marker on Map
 function updateMarker(data) {
@@ -118,43 +232,8 @@ function renderUserList() {
     });
 }
 
-// Socket Listeners
+// Socket Listeners handled in setupSocketListeners
 
-// 1. Initial Load of all users
-socket.on('current-users', (users) => {
-    // Clear existing data first
-    for (const userId in localUserData) delete localUserData[userId];
-    Object.assign(localUserData, users);
-
-    // Clear existing markers not in new list (tricky, better to just wipe or sync)
-    Object.keys(markers).forEach(id => {
-        if (!users[id]) removeMarker(id);
-    });
-
-    // Update map markers
-    Object.values(users).forEach(user => updateMarker(user));
-
-    // Update sidebar
-    renderUserList();
-});
-
-// 2. Real-time updates
-socket.on('receive-location', (data) => {
-    console.log('Received location:', data);
-    localUserData[data.id] = data;
-    updateMarker(data);
-    renderUserList();
-});
-
-// 3. Handle User Disconnect
-socket.on('user-disconnected', (userId) => {
-    console.log('User disconnected:', userId);
-    if (localUserData[userId]) {
-        delete localUserData[userId];
-        removeMarker(userId);
-        renderUserList();
-    }
-});
 
 // UI Interactions - Sidebar Toggle
 const sidebar = document.querySelector('.sidebar');

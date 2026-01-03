@@ -16,9 +16,17 @@
 <body>
     <header>
         <h1>📍 Family Tracking Monitor</h1>
-        <div class="status-bar">
-            <span id="connection-status" class="status-indicator disconnected">Disconnected</span>
-            <span id="user-count">Active Users: 0</span>
+        <div class="header-controls" style="display: flex; gap: 1rem; align-items: center;">
+            <div class="status-bar">
+                <span id="connection-status" class="status-indicator disconnected">Disconnected</span>
+                <span id="user-count">Active Users: 0</span>
+            </div>
+
+            <!-- Settings Button -->
+            <button id="settings-btn" class="settings-btn">
+                <span class="btn-icon">⚙️</span>
+                <span class="btn-text">Settings</span>
+            </button>
         </div>
     </header>
 
@@ -55,8 +63,24 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-    <!-- Socket.io loaded from Backend Server -->
-    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+    <!-- Socket.io Client Library (CDN) -->
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"
+        integrity="sha384-Gr6Lu2Ajx28mzwyVR8CFkULdCU7kMlZ9UthllibdOSo6qAiN+yXNHqtgdTvFXMT4"
+        crossorigin="anonymous"></script>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <h3>⚙️ Server Configuration</h3>
+            <p>Enter your Backend Server URL (e.g. your Ngrok URL)</p>
+            <input type="text" id="server-url-input" placeholder="https://xxxx.ngrok-free.app"
+                style="width: 100%; padding: 10px; margin: 10px 0;">
+            <button id="save-settings-btn"
+                style="padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer;">Connect</button>
+            <button id="close-settings-btn"
+                style="padding: 10px 20px; background: #6c757d; color: white; border: none; cursor: pointer; margin-left: 10px;">Close</button>
+        </div>
+    </div>
 
     <!-- App Logic -->
     <script src="app.js"></script>
