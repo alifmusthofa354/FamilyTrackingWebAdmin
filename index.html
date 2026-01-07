@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Family Tracking Dashboard</title>
+    <title>Family Tracking</title>
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
@@ -14,59 +14,102 @@
 </head>
 
 <body>
-    <header>
-        <h1>📍 Family Tracking Monitor</h1>
-        <div class="header-controls" style="display: flex; gap: 1rem; align-items: center;">
-            <div class="status-bar">
-                <span id="connection-status" class="status-indicator disconnected">Disconnected</span>
-                <span id="user-count">Active Users: 0</span>
-            </div>
 
-            <!-- Settings Button -->
-            <button id="settings-btn" class="settings-btn">
-                <span class="btn-icon">⚙️</span>
-                <span class="btn-text">Settings</span>
-            </button>
+    <!-- === VIEW 1: AUTHENTICATION (Login/Register) === -->
+    <div id="auth-view">
+        <div class="auth-container" id="login-container">
+            <h2>Welcome Back</h2>
+            <p>Login to track your family</p>
+            <div id="login-error" class="error-msg"></div>
+
+            <form id="login-form">
+                <input type="email" id="login-email" class="auth-input" placeholder="Email Address" required>
+                <input type="password" id="login-password" class="auth-input" placeholder="Password" required>
+                <button type="submit" class="auth-btn">Login</button>
+            </form>
+
+            <a class="auth-link" onclick="showRegister()">Don't have an account? Register</a>
         </div>
-    </header>
 
-    <main>
-        <!-- Floating Hamburger Button (shown when sidebar is closed) -->
-        <button id="sidebar-open" class="floating-toggle" aria-label="Open Menu">
-            <div class="hamburger">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </button>
+        <div class="auth-container" id="register-container" style="display:none;">
+            <h2>Create Account</h2>
+            <p>Join Family Tracking today</p>
+            <div id="register-error" class="error-msg"></div>
 
-        <div id="map"></div>
+            <form id="register-form">
+                <input type="text" id="reg-name" class="auth-input" placeholder="Full Name" required>
+                <input type="email" id="reg-email" class="auth-input" placeholder="Email Address" required>
+                <input type="password" id="reg-password" class="auth-input" placeholder="Password" required>
+                <button type="submit" class="auth-btn">Sign Up</button>
+            </form>
 
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h2>Connected Family</h2>
-                <!-- Close Button Inside Header -->
-                <button id="sidebar-close" class="close-btn" aria-label="Close Menu">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                    </svg>
+            <a class="auth-link" onclick="showLogin()">Already have an account? Login</a>
+        </div>
+    </div>
+
+
+    <!-- === VIEW 2: DASHBOARD (Map & Sidebar) === -->
+    <div id="dashboard-view">
+        <header>
+            <h1>📍 Family Tracking</h1>
+            <div class="header-controls" style="display: flex; gap: 1rem; align-items: center;">
+                <div class="status-bar">
+                    <span id="connection-status" class="status-indicator disconnected">Disconnected</span>
+                    <span id="user-count">Active Users: 0</span>
+                </div>
+
+                <!-- Profile Button -->
+                <button id="profile-btn" class="settings-btn" style="margin-right: 0.5rem; padding: 5px 12px;">
+                    <span class="btn-icon" id="navbar-avatar-icon"
+                        style="display: flex; align-items: center; justify-content: center;">
+                        <!-- Default Icon -->
+                        👤
+                    </span>
+                    <img id="navbar-avatar-img" src="" alt="Avatar"
+                        style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; display: none; margin-right: 5px;">
+                    <span class="btn-text" id="navbar-username">Profile</span>
+                </button>
+
+                <!-- Settings Button -->
+                <button id="settings-btn" class="settings-btn">
+                    <span class="btn-icon">⚙️</span>
+                    <span class="btn-text">Settings</span>
                 </button>
             </div>
-            <ul id="user-list">
-                <!-- User items will be added here dynamically -->
-                <li class="empty-message">No users connected yet...</li>
-            </ul>
-        </div>
-    </main>
+        </header>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+        <main style="height: 100%; width: 100%;">
+            <!-- Floating Hamburger Button (shown when sidebar is closed) -->
+            <button id="sidebar-open" class="floating-toggle" aria-label="Open Menu">
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </button>
 
-    <!-- Socket.io Client Library (CDN) -->
-    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"
-        integrity="sha384-Gr6Lu2Ajx28mzwyVR8CFkULdCU7kMlZ9UthllibdOSo6qAiN+yXNHqtgdTvFXMT4"
-        crossorigin="anonymous"></script>
+            <div id="map"></div>
+
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h2>Connected Family</h2>
+                    <!-- Close Button Inside Header -->
+                    <button id="sidebar-close" class="close-btn" aria-label="Close Menu">
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                            <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" />
+                        </svg>
+                    </button>
+                </div>
+                <ul id="user-list">
+                    <!-- User items will be added here dynamically -->
+                    <li class="empty-message">No users connected yet...</li>
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals (Hidden by default) -->
 
     <!-- Settings Modal -->
     <div id="settings-modal" class="modal" style="display:none;">
@@ -81,6 +124,64 @@
                 style="padding: 10px 20px; background: #6c757d; color: white; border: none; cursor: pointer; margin-left: 10px;">Close</button>
         </div>
     </div>
+
+    <!-- Profile Modal -->
+    <div id="profile-modal" class="modal" style="display:none;">
+        <div class="modal-content" style="text-align: center;">
+            <span class="close-modal" id="close-profile-btn"
+                style="position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer;">&times;</span>
+
+            <h3>My Profile</h3>
+
+            <div class="profile-image-container"
+                style="margin: 20px auto; position: relative; width: 100px; height: 100px; background: #eee; border-radius: 50%;">
+
+                <!-- Default Avatar (Initial) -->
+                <div id="profile-initial-avatar"
+                    style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: #aaa; font-weight: bold;">
+                    👤
+                </div>
+
+                <!-- Real Image (Hidden by default) -->
+                <img id="profile-picture" src="" alt="Profile"
+                    style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #667eea; display: none; position: absolute; top:0; left:0;">
+
+                <label for="photo-upload"
+                    style="position: absolute; bottom: 0; right: 0; background: #667eea; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 2;">
+                    📷
+                </label>
+                <input type="file" id="photo-upload" accept="image/*" style="display: none;">
+            </div>
+
+            <div style="text-align: left; margin-top: 20px;">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; color: #666; font-size: 0.9rem; margin-bottom: 5px;">Name</label>
+                    <input type="text" id="profile-name" disabled
+                        style="width: 100%; padding: 10px; border: 1px solid #eee; border-radius: 8px; background: #f9f9f9;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; color: #666; font-size: 0.9rem; margin-bottom: 5px;">Email</label>
+                    <input type="text" id="profile-email" disabled
+                        style="width: 100%; padding: 10px; border: 1px solid #eee; border-radius: 8px; background: #f9f9f9;">
+                </div>
+            </div>
+
+            <button id="logout-btn"
+                style="width: 100%; padding: 12px; background: #ff4757; color: white; border: none; border-radius: 8px; margin-top: 10px; cursor: pointer;">
+                Logout
+            </button>
+        </div>
+    </div>
+
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Socket.io Client Library (CDN) -->
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"
+        integrity="sha384-Gr6Lu2Ajx28mzwyVR8CFkULdCU7kMlZ9UthllibdOSo6qAiN+yXNHqtgdTvFXMT4"
+        crossorigin="anonymous"></script>
 
     <!-- App Logic -->
     <script src="app.js"></script>
