@@ -92,7 +92,10 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     try {
         const res = await fetch(`${API_URL}/auth/login`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'ngrok-skip-browser-warning': 'true' // Bypass ngrok warning page
+            },
             body: JSON.stringify({ email, password })
         });
         const data = await res.json();
@@ -121,7 +124,10 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     try {
         const res = await fetch(`${API_URL}/auth/register`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'ngrok-skip-browser-warning': 'true'
+            },
             body: JSON.stringify({ name, email, password })
         });
         const data = await res.json();
@@ -183,6 +189,7 @@ function initSocket(url) {
     socket = io(url, {
         reconnectionAttempts: 5,
         timeout: 10000,
+        transports: ['websocket'], // Force websocket to avoid ngrok polling issues
         extraHeaders: {
             "ngrok-skip-browser-warning": "true",
             "Authorization": `Bearer ${token}`
@@ -240,7 +247,10 @@ async function fetchUserProfile() {
 
     try {
         const res = await fetch(`${API_URL}/users/me`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'ngrok-skip-browser-warning': 'true'
+            }
         });
 
         if (res.ok) {
@@ -289,7 +299,10 @@ photoUploadInput.onchange = async (e) => {
         profileImg.style.opacity = '0.5';
         const res = await fetch(`${API_URL}/users/upload-photo`, {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` },
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'ngrok-skip-browser-warning': 'true'
+            },
             body: formData
         });
         const data = await res.json();
